@@ -8,17 +8,45 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
      
-    - name: Setup Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.9'
+    - name: Install system dependencies
+      run: |
+        sudo apt update
+        sudo apt install -y \
+          python3-pip \
+          python3-venv \
+          git \
+          autoconf \
+          automake \
+          libtool \
+          pkg-config \
+          zlib1g-dev \
+          libncurses5-dev \
+          libffi-dev \
+          libssl-dev \
+          cmake
+        echo "✅ System dependencies installed"
+       
+    - name: Install Python dependencies
+      run: |
+        python3 -m pip install --upgrade pip
+        python3 -m pip install \
+          cython==0.29.33 \
+          buildozer==1.4.0 \
+          kivy==2.1.0 \
+          numpy==1.21.6
+        echo "✅ Python dependencies installed"
+       
+    - name: Verify installations
+      run: |
+        python3 -c "import cython; print('Cython version:', cython.__version__)"
+        buildozer --version
+        echo "✅ All dependencies verified"
        
     - name: Build APK
       run: |
-        sudo apt update
-        sudo apt install -y python3-pip
-        pip3 install buildozer
+        buildozer android clean
         buildozer android debug
+        echo "✅ Build completed"
        
     - name: Upload APK
       uses: actions/upload-artifact@v4
